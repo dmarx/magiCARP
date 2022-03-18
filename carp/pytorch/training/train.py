@@ -219,7 +219,7 @@ def train(
                 trainer.model.eval()
                 trainer.before_validate_step()
                 eval_batch_size = trainer.train_config['batch_size']
-                if hasattr(trainer.train_config, 'eval_batch_size')
+                if hasattr(trainer.train_config, 'eval_batch_size'):
                     eval_batch_size = trainer.train_config['eval_batch_size']
                 eval_batch_size = min(eval_batch_size, trainer.train_config['validation_size'])
                 if not trainer.train_config['validation_size'] % eval_batch_size == 0:
