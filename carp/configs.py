@@ -57,6 +57,7 @@ class TrainConfig:
     mixed_precision: bool = True  # Use AMP mixed precision
     grad_accum: int = 1
     grad_clip: float = -1  # What to clip grad norms to (set to -1 for no clip)
+    eval_batch_size: int = -1 # (optional) If provided, validation will be batched over. otherwise, full validation set will be evaluated in a single batch.
 
     @classmethod
     def from_dict(cls, config: Dict[str, Any]):

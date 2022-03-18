@@ -241,23 +241,29 @@ class BaseTrainer(object):
         pass
 
     def construct_dataloader_train(
-        self, dataset: BaseDataPipeline, tokenizer: Callable, multi_gpus: bool
+        self, dataset: BaseDataPipeline, tokenizer: Callable, multi_gpus: bool, batch_size=None,
     ) -> DataLoader:
         return self.construct_dataloader(
-            dataset=dataset, tokenizer=tokenizer, multi_gpus=multi_gpus
+            dataset=dataset, tokenizer=tokenizer, multi_gpus=multi_gpus, batch_size=batch_size,
         )
 
     def construct_dataloader_eval(
-        self, dataset: BaseDataPipeline, tokenizer: Callable, multi_gpus: bool
+        self, dataset: BaseDataPipeline, tokenizer: Callable, multi_gpus: bool, batch_size=None,
     ) -> DataLoader:
         return self.construct_dataloader(
-            dataset=dataset, tokenizer=tokenizer, multi_gpus=multi_gpus
+            dataset=dataset, tokenizer=tokenizer, multi_gpus=multi_gpus, batch_size=batch_size,
         )
 
-
     def construct_dataloader(
-        self, dataset: BaseDataPipeline, tokenizer: Callable, multi_gpus: bool
+        self, 
+        dataset: BaseDataPipeline, 
+        tokenizer: Callable, 
+        multi_gpus: bool,
+        batch_size=None,
     ) -> DataLoader:
+        if not batch_size:
+            batch_size = self.train_config.batch_size
+
         sampler = RandomSampler(dataset)
 
         if multi_gpus is True:
@@ -268,7 +274,7 @@ class BaseTrainer(object):
 
         return DataLoader(
             dataset,
-            batch_size=self.train_config.batch_size,
+            batch_size=batch_size,
             sampler=sampler,
             collate_fn=tokenizer,
         )

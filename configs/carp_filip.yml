@@ -23,6 +23,7 @@ train_job:
   use_half: false
   do_log: true
   validation_size: 1000
+  eval_batch_size: 16
   eval_selection: "final_n"
   use_bucket: false
   dupe_protection: true

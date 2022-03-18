@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 from pathlib import Path
+import warnings
 
 import deepspeed
 import madgrad
@@ -217,17 +218,34 @@ def train(
                 print_rank_0("VALIDATING...")
                 trainer.model.eval()
                 trainer.before_validate_step()
-                eval_data = trainer.construct_dataloader_eval(evalset, tokenizer, multi_gpus)
+                eval_batch_size = trainer.train_config.get(
+                    'eval_batch_size', 
+                    trainer.train_config['batch_size'])
+                eval_batch_size = min(eval_batch_size, trainer.train_config['validation_size'])
+                if not trainer.train_config['validation_size'] % eval_batch_size == 0:
+                    warnings.warn("validation_size is not evenly divisible by eval_batch_size. This may impact correctness of validation metrics.")
+                eval_data = trainer.construct_dataloader_eval(evalset, tokenizer, multi_gpus, batch_size=eval_batch_size)
 
-                eval_out = trainer.eval_step(eval_data)
+                #eval_out = trainer.eval_step(eval_data)
+                evals = [trainer.eval_step(eval_datum) for eval_datum in eval_data]
+                #n = len(evals)
+                eval_out = {
+                    'Loss/Validation':0, 
+                    'Acc/Validation':0
+                    }
+                for eval in evals:
+                    eval_out['Loss/Validation'] += eval['Loss/Validation']
+                    eval_out['Acc/Validation'] += eval['Acc/Validation'] * eval_batch_size # this won't be strictly accurate if validation_size isn't evenly divisible by eval_batch_size
+                eval_out['Acc/Validation'] = eval_out['Acc/Validation'] / trainer.train_config['validation_size']
+
                 trainer.after_validate_step()
 
                 if eval_out["Loss/Validation"] < best_val:
                     best_val = eval_out["Loss/Validation"]
                     print_rank_0("NEW BEST VALIDATION. SAVING.")
-                    print_rank_0(f"Validation Avg Loss: {eval_out['Loss/Validation']}")
+                    print_rank_0(f"Validation Loss: {eval_out['Loss/Validation']}")
                     print_rank_0(
-                        f"Validation Avg Accuracy: {eval_out['Acc/Validation']}"
+                        f"Validation Accuracy: {eval_out['Acc/Validation']}"
                     )
                     Path(f"./best/{iteration}/").mkdir(parents=True, exist_ok=True)
                     fn_rank_0(save_fn, f"./best/{iteration}/")
