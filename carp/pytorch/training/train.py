@@ -222,7 +222,7 @@ def train(
                 if hasattr(trainer.train_config, 'eval_batch_size'):
                     eval_batch_size = trainer.train_config.eval_batch_size
                 eval_batch_size = min(eval_batch_size, trainer.train_config.validation_size)
-                if not trainer.train_config['validation_size'] % eval_batch_size == 0:
+                if not trainer.train_config.validation_size % eval_batch_size == 0:
                     warnings.warn("validation_size is not evenly divisible by eval_batch_size. This may impact correctness of validation metrics.")
                 eval_data = trainer.construct_dataloader_eval(evalset, tokenizer, multi_gpus, batch_size=eval_batch_size)
 
@@ -236,7 +236,7 @@ def train(
                 for eval in evals:
                     eval_out['Loss/Validation'] += eval['Loss/Validation']
                     eval_out['Acc/Validation'] += eval['Acc/Validation'] * eval_batch_size # this won't be strictly accurate if validation_size isn't evenly divisible by eval_batch_size
-                eval_out['Acc/Validation'] = eval_out['Acc/Validation'] / trainer.train_config['validation_size']
+                eval_out['Acc/Validation'] = eval_out['Acc/Validation'] / trainer.train_config.validation_size
 
                 trainer.after_validate_step()
 
