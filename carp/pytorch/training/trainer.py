@@ -240,6 +240,21 @@ class BaseTrainer(object):
     def on_epoch_start(self):
         pass
 
+    def construct_dataloader_train(
+        self, dataset: BaseDataPipeline, tokenizer: Callable, multi_gpus: bool
+    ) -> DataLoader:
+        return self.construct_dataloader(
+            dataset=dataset, tokenizer=tokenizer, multi_gpus=multi_gpus
+        )
+
+    def construct_dataloader_eval(
+        self, dataset: BaseDataPipeline, tokenizer: Callable, multi_gpus: bool
+    ) -> DataLoader:
+        return self.construct_dataloader(
+            dataset=dataset, tokenizer=tokenizer, multi_gpus=multi_gpus
+        )
+
+
     def construct_dataloader(
         self, dataset: BaseDataPipeline, tokenizer: Callable, multi_gpus: bool
     ) -> DataLoader:

@@ -176,7 +176,7 @@ def train(
 
     for epoch in range(trainer.train_config.epochs):
         trainer.on_epoch_start()
-        train_data = trainer.construct_dataloader(dataset, tokenizer, multi_gpus)
+        train_data = trainer.construct_dataloader_train(dataset, tokenizer, multi_gpus)
 
         for passages, reviews in train_data:
             timer.hit()
@@ -217,7 +217,7 @@ def train(
                 print_rank_0("VALIDATING...")
                 trainer.model.eval()
                 trainer.before_validate_step()
-                eval_data = trainer.construct_dataloader(evalset, tokenizer, multi_gpus)
+                eval_data = trainer.construct_dataloader_eval(evalset, tokenizer, multi_gpus)
 
                 eval_out = trainer.eval_step(eval_data)
                 trainer.after_validate_step()
